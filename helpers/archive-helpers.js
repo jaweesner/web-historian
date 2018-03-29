@@ -53,9 +53,10 @@ exports.addUrlToList = function(url, callback) {
   exports.isUrlInList( url, function(exists) {
     if (!exists) {
       fs.appendFile(exports.paths.list, url + '\n', () => { 
-        if (callback) {callback();}
+        
       });
     }
+    if (callback) {callback();}
   });
 };
 
@@ -67,23 +68,35 @@ exports.isUrlArchived = function(url, callback) {
 
 exports.downloadUrls = function (urls) {
     urls.forEach( (site) => {
-      console.log(site) 
+      
+      if (site){
       exports.isUrlArchived(site, (exists) => {
         var archivepath = path.join(exports.paths.archivedSites, site);
         if (!exists) {
-          console.log(archivepath) 
           fs.open(archivepath, 'w', (err, fd) => {
-            https.get(site, {headers: httpHelpers.headers}, (res) => {
-              var body = []; 
+            var options = {
+              host:site,
+              path:'/',
+              method:'GET'
+            };
+
+            req = https.request(options, (res) => {
+              var body = [];
+              res.on('error', (err) => console.log(err))
               res.on('data', (chunk) => {
                 body.push(chunk);
-              }).on('end', (err) => {
-                fs.write(fd, body.join(''), () => { fs.close(fd); });
+              });
+              res.on('end', (err) => {
+                if (err){console.log(err)};
+                fs.write(fd, body.join(''), () => { fs.close(fd); })
+                
               });
             });
+            req.on('error', (err) => console.log(err))
+            req.end();
           });
         }
       });
+    }
     });
-  });
 };
