@@ -1,7 +1,8 @@
 var http = require('http');
 var handler = require('./request-handler');
 var initialize = require('./initialize.js');
-
+var cron = require('node-cron');
+var archive = require('../helpers/archive-helpers');
 // Why do you think we have this here?
 // HINT: It has to do with what's in .gitignore
 initialize('./archives');
@@ -17,3 +18,15 @@ if (module.parent) {
   console.log('Listening on http://' + ip + ':' + port);
 }
 
+var task = cron.schedule('* * * * *', function() {
+  console.log('immediately started');
+  console.log('run every five-minutes')
+  archive.readListOfUrls((list) => {
+    console.log('list of URLS: '+ list); 
+    archive.downloadUrls(list);
+    console.log('downloading...')
+  });
+}, false);
+
+task.start();
+console.log('things ran')

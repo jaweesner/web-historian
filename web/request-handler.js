@@ -26,10 +26,6 @@ exports.handleRequest = function (req, res) {
             httpHelp.serveAssets(res, path.join(archive.paths.archivedSites, site), 302);
         } else {
           console.log("archiving");
-            archive.readListOfUrls((list) => {
-              console.log('list of URLS: '+ list); 
-              archive.downloadUrls(list);
-            });
             httpHelp.serveAssets(res, path.join(archive.paths.siteAssets, 'loading.html'), 302);
           }
         });
